@@ -1,0 +1,21 @@
+[project]
+name = "video"
+version = "0.1.0"
+description = "FastAPI 与 Vue3 的工程化基础骨架。"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0,<1.0.0",
+    "PyJWT>=2.9.0,<3.0.0",
+    "pydantic-settings>=2.3.0,<3.0.0",
+    "pwdlib>=0.2.1,<1.0.0",
+    "redis>=5.2.0,<6.0.0",
+    "uvicorn[standard]>=0.30.0,<1.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
