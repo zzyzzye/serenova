@@ -71,7 +71,7 @@
 <script setup>
 import { reactive, ref } from "vue";
 
-import { login } from "../services/auth";
+import { login } from "../../services/auth";
 
 const emit = defineEmits([
   "login-success",

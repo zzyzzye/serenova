@@ -7,6 +7,7 @@ import WorkspaceView from "../views/WorkspaceView.vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // === 共享层：认证与全局入口 ===
     {
       path: "/",
       name: "login",
@@ -25,6 +26,15 @@ const router = createRouter({
         requiresAuth: true,
       },
     },
+
+    // === video App ===
+    // 新增 video 页面路由时放这里
+
+    // === blog App ===
+    // 新增 blog 页面路由时放这里
+
+    // === tools App ===
+    // 新增 tools 页面路由时放这里
   ],
 });
 

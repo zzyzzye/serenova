@@ -1,39 +1,17 @@
 <template>
-  <section class="glass-panel register-card">
-    <div class="register-card-top">
+  <section class="glass-panel forgot-card">
+    <div class="forgot-card-top">
       <div>
-        <p class="register-card-kicker">创建账号</p>
-        <h3>注册</h3>
+        <p class="forgot-card-kicker">密码重置</p>
+        <h3>忘记密码</h3>
       </div>
     </div>
 
-    <form class="register-form" @submit.prevent="handleSubmit">
-      <label class="field">
-        <span>用户名</span>
-        <input
-          v-model.trim="form.username"
-          type="text"
-          name="username"
-          autocomplete="username"
-          placeholder="3-64 个字符"
-          @focus="$emit('input-focus')"
-          @blur="$emit('input-blur')"
-        />
-      </label>
+    <div class="forgot-card-copy">
+      <p>输入注册时使用的邮箱，我们将发送重置链接到你的邮箱。</p>
+    </div>
 
-      <label class="field">
-        <span>昵称</span>
-        <input
-          v-model.trim="form.nickname"
-          type="text"
-          name="nickname"
-          autocomplete="nickname"
-          placeholder="1-64 个字符"
-          @focus="$emit('input-focus')"
-          @blur="$emit('input-blur')"
-        />
-      </label>
-
+    <form class="forgot-form" @submit.prevent="handleSubmit">
       <label class="field">
         <span>邮箱</span>
         <input
@@ -41,33 +19,7 @@
           type="email"
           name="email"
           autocomplete="email"
-          placeholder="用于密码找回"
-          @focus="$emit('input-focus')"
-          @blur="$emit('input-blur')"
-        />
-      </label>
-
-      <label class="field">
-        <span>密码</span>
-        <input
-          v-model="form.password"
-          type="password"
-          name="new-password"
-          autocomplete="new-password"
-          placeholder="至少 6 个字符"
-          @focus="$emit('input-focus')"
-          @blur="$emit('input-blur')"
-        />
-      </label>
-
-      <label class="field">
-        <span>确认密码</span>
-        <input
-          v-model="form.confirmPassword"
-          type="password"
-          name="confirm-password"
-          autocomplete="new-password"
-          placeholder="再次输入密码"
+          placeholder="请输入注册邮箱"
           @focus="$emit('input-focus')"
           @blur="$emit('input-blur')"
         />
@@ -83,12 +35,12 @@
         @mouseenter="$emit('btn-enter')"
         @mouseleave="$emit('btn-leave')"
       >
-        {{ submitting ? "注册中..." : "注册" }}
+        {{ submitting ? "发送中..." : "发送重置链接" }}
       </button>
     </form>
 
     <div class="card-switch-links">
-      <a href="#" @click.prevent="$emit('switch-panel', 'login')">已有账号？登录</a>
+      <a href="#" @click.prevent="$emit('switch-panel', 'login')">返回登录</a>
     </div>
   </section>
 </template>
@@ -96,10 +48,9 @@
 <script setup>
 import { reactive, ref } from "vue";
 
-import { register } from "../services/auth";
+import { forgotPassword } from "../../services/auth";
 
 const emit = defineEmits([
-  "register-success",
   "switch-panel",
   "input-focus",
   "input-blur",
@@ -107,26 +58,14 @@ const emit = defineEmits([
   "btn-leave",
 ]);
 
-const form = reactive({
-  username: "",
-  nickname: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-});
+const form = reactive({ email: "" });
 const submitting = ref(false);
 const errorMessage = ref("");
 const successMessage = ref("");
 
 async function handleSubmit() {
-  if (!form.username || !form.nickname || !form.email || !form.password) {
-    errorMessage.value = "请填写所有字段。";
-    successMessage.value = "";
-    return;
-  }
-
-  if (form.password !== form.confirmPassword) {
-    errorMessage.value = "两次输入的密码不一致。";
+  if (!form.email) {
+    errorMessage.value = "请输入邮箱地址。";
     successMessage.value = "";
     return;
   }
@@ -136,17 +75,11 @@ async function handleSubmit() {
   successMessage.value = "";
 
   try {
-    await register({
-      username: form.username,
-      nickname: form.nickname,
-      email: form.email,
-      password: form.password,
-    });
-    successMessage.value = "注册成功，正在进入工作台。";
-    emit("register-success");
+    await forgotPassword({ email: form.email });
+    successMessage.value = "如果该邮箱已注册，重置链接已发送到你的邮箱。";
   } catch (error) {
     errorMessage.value =
-      error?.response?.data?.detail || "注册失败，请稍后重试。";
+      error?.response?.data?.detail || "发送失败，请稍后重试。";
   } finally {
     submitting.value = false;
   }
@@ -154,12 +87,12 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.register-card {
+.forgot-card {
   width: 100%;
   padding: 28px 28px 30px;
 }
 
-.register-card-top {
+.forgot-card-top {
   position: relative;
   z-index: 1;
   display: flex;
@@ -168,24 +101,37 @@ async function handleSubmit() {
   gap: 16px;
 }
 
-.register-card-kicker {
+.forgot-card-kicker {
   margin: 0 0 8px;
   font-size: 13px;
   color: rgba(71, 85, 105, 0.7);
 }
 
-.register-card h3 {
+.forgot-card h3 {
   margin: 0;
   font-size: 42px;
   line-height: 1;
 }
 
-.register-form {
+.forgot-card-copy {
   position: relative;
   z-index: 1;
-  margin-top: 26px;
+  margin-top: 16px;
+}
+
+.forgot-card-copy p {
+  margin: 0;
+  max-width: 420px;
+  color: rgba(51, 65, 85, 0.76);
+  line-height: 1.65;
+}
+
+.forgot-form {
+  position: relative;
+  z-index: 1;
+  margin-top: 24px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .field {
@@ -201,7 +147,7 @@ async function handleSubmit() {
 
 .field input {
   width: 100%;
-  min-height: 52px;
+  min-height: 56px;
   padding: 0 18px;
   font-size: 16px;
   color: #0f172a;
@@ -257,11 +203,11 @@ async function handleSubmit() {
 }
 
 @media (max-width: 640px) {
-  .register-card {
+  .forgot-card {
     padding: 24px 20px;
   }
 
-  .register-card h3 {
+  .forgot-card h3 {
     font-size: 36px;
   }
 }
