@@ -11,6 +11,22 @@ export async function login(payload) {
   return data;
 }
 
+export async function register(payload) {
+  const { data } = await http.post("/auth/register", payload);
+  persistAuthState(data);
+  return data;
+}
+
+export async function forgotPassword(payload) {
+  const { data } = await http.post("/auth/forgot-password", payload);
+  return data;
+}
+
+export async function resetPassword(payload) {
+  const { data } = await http.post("/auth/reset-password", payload);
+  return data;
+}
+
 export async function fetchCurrentUser() {
   const { data } = await http.get("/auth/me");
   return data;

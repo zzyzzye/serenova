@@ -1,4 +1,4 @@
-"""文件职责：封装密码散列与 JWT 签发校验能力，不处理认证流程编排。"""
+"""封装密码散列与 JWT 签发校验能力，不处理认证流程编排。"""
 
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4

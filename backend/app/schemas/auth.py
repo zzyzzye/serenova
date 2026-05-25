@@ -5,6 +5,15 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class RegisterRequest(BaseModel):
+    """注册请求。"""
+
+    username: str = Field(min_length=3, max_length=64)
+    nickname: str = Field(min_length=1, max_length=64)
+    email: str = Field(min_length=5, max_length=255)
+    password: str = Field(min_length=6, max_length=128)
+
+
 class LoginRequest(BaseModel):
     """登录请求。"""
 
@@ -18,6 +27,19 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(min_length=20)
 
 
+class ForgotPasswordRequest(BaseModel):
+    """忘记密码请求。"""
+
+    email: str = Field(min_length=5, max_length=255)
+
+
+class ResetPasswordRequest(BaseModel):
+    """重置密码请求。"""
+
+    token: str = Field(min_length=1)
+    new_password: str = Field(min_length=6, max_length=128)
+
+
 class UserProfile(BaseModel):
     """对外返回的用户信息。"""
 
@@ -29,6 +51,7 @@ class UserProfile(BaseModel):
 class UserRecord(UserProfile):
     """仓储层使用的用户记录。"""
 
+    email: str | None = None
     password_hash: str
     is_active: bool = True
 

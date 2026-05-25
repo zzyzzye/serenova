@@ -1,15 +1,55 @@
+# 版本控制
 .git
 .gitignore
+
+# Claude Code 配置
+.claude/
+
+# 文档和规范
+openspec/
+example/
+README.md
+CLAUDE.md
+AGENTS.md
+
+# Python 缓存和虚拟环境
+__pycache__
+*.py[cod]
+*.pyo
+*.pyd
 .pytest_cache
 .mypy_cache
-__pycache__
+.ruff_cache
 .venv
+venv
+
+# 前端依赖和构建产物
 node_modules
 frontend/node_modules
 frontend/dist
 dist
 build
-*.pyc
-*.pyo
-*.pyd
+
+# 测试和覆盖率
+coverage
+htmlcov
+.coverage
+
+# 环境变量文件
+.env
+.env.*
+!.env.example
+
+# 日志
 *.log
+
+# IDE 配置
+.idea/
+.vscode/
+
+# npm 配置
+.npmrc
+
+# Docker Compose（不进入单个镜像）
+docker-compose.yml
+docker-compose.yaml

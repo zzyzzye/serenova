@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { getStoredAuthState } from "../services/auth";
 import LoginView from "../views/LoginView.vue";
+import ResetPasswordView from "../views/ResetPasswordView.vue";
 import WorkspaceView from "../views/WorkspaceView.vue";
 
 const router = createRouter({
@@ -10,6 +11,11 @@ const router = createRouter({
       path: "/",
       name: "login",
       component: LoginView,
+    },
+    {
+      path: "/reset-password",
+      name: "reset-password",
+      component: ResetPasswordView,
     },
     {
       path: "/workspace",

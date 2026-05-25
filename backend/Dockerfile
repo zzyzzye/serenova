@@ -9,6 +9,7 @@ COPY backend/pyproject.toml /app/pyproject.toml
 COPY backend/README.md /app/README.md
 COPY backend/app /app/app
 COPY backend/main.py /app/main.py
+COPY backend/scripts /app/scripts
 
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .

@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# 使用淘宝 npm 镜像源
+RUN npm config set registry https://registry.npmmirror.com
+
 COPY frontend/package.json /app/package.json
 RUN npm install
 

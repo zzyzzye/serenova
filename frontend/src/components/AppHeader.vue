@@ -1,6 +1,10 @@
 <template>
   <header class="header">
-    <div class="header-inner glass-panel">
+    <div
+      class="header-inner glass-panel"
+      @mouseenter="liquid.distort(1.15)"
+      @mouseleave="liquid.settle()"
+    >
       <div>
         <p class="header-kicker">Video Project</p>
         <h1 class="header-title">视频平台控制台</h1>
@@ -15,6 +19,10 @@
 
 <script setup>
 import { RouterLink } from "vue-router";
+
+import { useLiquidGlass } from "../composables/useLiquidGlass";
+
+const liquid = useLiquidGlass();
 </script>
 
 <style scoped>

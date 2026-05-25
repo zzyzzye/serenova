@@ -1,6 +1,10 @@
 <template>
   <div class="workspace-view">
-    <section class="glass-panel workspace-hero">
+    <section
+      class="glass-panel workspace-hero"
+      @mouseenter="liquid.distort(1.15)"
+      @mouseleave="liquid.settle()"
+    >
       <div>
         <p class="workspace-kicker">已登录</p>
         <h2>工作台入口</h2>
@@ -8,18 +12,32 @@
           当前登录信息已经写入本地存储。后续可以在这里继续接用户中心、视频业务页、权限菜单和刷新令牌续期逻辑。
         </p>
       </div>
-      <button class="ghost-button" type="button" @click="handleLogout">
+      <button
+        class="ghost-button"
+        type="button"
+        @click="handleLogout"
+        @mouseenter="liquid.distort(1.2)"
+        @mouseleave="liquid.settle()"
+      >
         退出登录
       </button>
     </section>
 
     <section class="workspace-grid">
-      <article class="glass-panel workspace-card">
+      <article
+        class="glass-panel workspace-card"
+        @mouseenter="liquid.distort(1.18)"
+        @mouseleave="liquid.settle()"
+      >
         <span class="workspace-label">当前用户</span>
         <strong>{{ currentUser?.nickname || "未命名用户" }}</strong>
         <p>{{ currentUser?.username || "-" }}</p>
       </article>
-      <article class="glass-panel workspace-card">
+      <article
+        class="glass-panel workspace-card"
+        @mouseenter="liquid.distort(1.18)"
+        @mouseleave="liquid.settle()"
+      >
         <span class="workspace-label">接口状态</span>
         <strong>{{ loading ? "读取中" : "已连接" }}</strong>
         <p>{{ errorMessage || "登录响应已完成，可继续接入 /auth/me。" }}</p>
@@ -32,9 +50,11 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import { useLiquidGlass } from "../composables/useLiquidGlass";
 import { fetchCurrentUser, getStoredAuthState, logout } from "../services/auth";
 
 const router = useRouter();
+const liquid = useLiquidGlass();
 const authState = ref(getStoredAuthState());
 const loading = ref(false);
 const errorMessage = ref("");

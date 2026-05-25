@@ -1,4 +1,4 @@
-"""文件职责：定义应用配置来源与默认值，不处理运行时业务逻辑。"""
+"""定义应用配置来源与默认值，不处理运行时业务逻辑。"""
 
 from functools import lru_cache
 
@@ -24,16 +24,21 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
     redis_url: str = "redis://localhost:6379/0"
     redis_key_prefix: str = "video"
-    demo_username: str = "admin"
-    demo_password: str = "admin123456"
-    demo_user_id: str = "demo-admin"
-    demo_nickname: str = "演示管理员"
+    database_url: str = "mysql+aiomysql://root:root@localhost:3306/serenova"
     cors_origins: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:5173",
             "http://127.0.0.1:5173",
         ]
     )
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_pass: str = ""
+    smtp_from: str = ""
+    smtp_use_tls: bool = True
+    reset_token_expire_minutes: int = 30
+    frontend_url: str = "http://localhost:5173"
 
 
 @lru_cache

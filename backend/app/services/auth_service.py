@@ -1,24 +1,60 @@
-"""文件职责：编排账号登录、令牌刷新、会话撤销与当前用户解析，不负责 HTTP 协议细节。"""
+"""文件职责：编排账号注册、登录、令牌刷新、会话撤销、密码重置与当前用户解析，不负责 HTTP 协议细节。"""
 
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from fastapi import HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.user import User
 
 from app.core.config import settings
-from app.core.security import create_token, decode_token, verify_password
-from app.core.security import TokenDecodeError
+from app.core.security import TokenDecodeError, create_token, decode_token, hash_password, verify_password
 from app.db.redis import get_redis_client
 from app.repositories.auth_session_repository import AuthSessionRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.auth import AccessTokenContext, LoginRequest, TokenPairResponse, UserProfile
+from app.schemas.auth import (
+    AccessTokenContext,
+    ForgotPasswordRequest,
+    LoginRequest,
+    RegisterRequest,
+    ResetPasswordRequest,
+    TokenPairResponse,
+    UserProfile,
+)
+from app.services.email_service import EmailService
 
 
 class AuthService:
     """认证服务。"""
 
-    def __init__(self):
-        self.user_repository = UserRepository()
+    def __init__(self, session: AsyncSession):
+        self.user_repository = UserRepository(session)
+
+    async def register(self, payload: RegisterRequest) -> TokenPairResponse:
+        """注册新账号并创建登录会话。"""
+        existing = await self.user_repository.get_by_username(payload.username)
+        if existing is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="用户名已被占用。",
+            )
+        existing_email = await self.user_repository.get_by_email(payload.email)
+        if existing_email is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="邮箱已被注册。",
+            )
+        user_record = await self.user_repository.create_user(
+            username=payload.username,
+            nickname=payload.nickname,
+            email=payload.email,
+            password_hash=hash_password(payload.password),
+        )
+        return await self._issue_token_pair(
+            user=UserProfile.model_validate(user_record.model_dump()),
+        )
 
     async def login(self, payload: LoginRequest) -> TokenPairResponse:
         """校验账号密码并创建登录会话。"""
@@ -79,6 +115,55 @@ class AuthService:
             token_context.token_id,
             token_context.expires_at,
         )
+
+    async def forgot_password(self, payload: ForgotPasswordRequest) -> None:
+        """生成密码重置 token 并通过邮件发送重置链接。"""
+        user = await self.user_repository.get_by_email(payload.email)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="该邮箱未注册。",
+            )
+
+        reset_token = uuid4().hex
+        redis_client = await get_redis_client()
+        key = f"{settings.redis_key_prefix}:auth:reset:{reset_token}"
+        await redis_client.setex(
+            key,
+            settings.reset_token_expire_minutes * 60,
+            user.user_id,
+        )
+
+        reset_link = f"{settings.frontend_url}/reset-password?token={reset_token}"
+        EmailService().send_reset_password_email(to=payload.email, reset_link=reset_link)
+
+    async def reset_password(self, payload: ResetPasswordRequest) -> None:
+        """验证重置 token 并更新密码。"""
+        redis_client = await get_redis_client()
+        key = f"{settings.redis_key_prefix}:auth:reset:{payload.token}"
+        user_id = await redis_client.get(key)
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="重置链接已过期或无效。",
+            )
+
+        user = await self.user_repository.get_by_user_id(user_id)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="用户不存在。",
+            )
+
+        new_hash = hash_password(payload.new_password)
+        orm_result = await self.user_repository.session.execute(
+            select(User).where(User.id == user_id)
+        )
+        orm_user = orm_result.scalar_one()
+        orm_user.password_hash = new_hash
+        await self.user_repository.session.commit()
+
+        await redis_client.delete(key)
 
     async def _issue_token_pair(self, *, user: UserProfile) -> TokenPairResponse:
         """创建访问令牌、刷新令牌和 Redis 会话。"""

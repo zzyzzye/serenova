@@ -1,6 +1,5 @@
 <template>
   <section class="glass-panel login-card">
-    <div class="card-glow" aria-hidden="true" />
     <div class="login-card-top">
       <div>
         <p class="login-card-kicker">账号登录</p>
@@ -25,6 +24,8 @@
           name="username"
           autocomplete="username"
           placeholder="请输入用户名"
+          @focus="$emit('input-focus')"
+          @blur="$emit('input-blur')"
         />
       </label>
 
@@ -36,6 +37,8 @@
           name="password"
           autocomplete="current-password"
           placeholder="请输入密码"
+          @focus="$emit('input-focus')"
+          @blur="$emit('input-blur')"
         />
       </label>
 
@@ -47,10 +50,21 @@
       <p v-if="errorMessage" class="feedback error-text">{{ errorMessage }}</p>
       <p v-else-if="successMessage" class="feedback success-text">{{ successMessage }}</p>
 
-      <button class="primary-button" type="submit" :disabled="submitting">
+      <button
+        class="primary-button"
+        type="submit"
+        :disabled="submitting"
+        @mouseenter="$emit('btn-enter')"
+        @mouseleave="$emit('btn-leave')"
+      >
         {{ submitting ? "登录中..." : "登录" }}
       </button>
     </form>
+
+    <div class="card-switch-links">
+      <a href="#" @click.prevent="$emit('switch-panel', 'register')">没有账号？注册</a>
+      <a href="#" @click.prevent="$emit('switch-panel', 'forgot')">忘记密码？</a>
+    </div>
   </section>
 </template>
 
@@ -59,7 +73,14 @@ import { reactive, ref } from "vue";
 
 import { login } from "../services/auth";
 
-const emit = defineEmits(["login-success"]);
+const emit = defineEmits([
+  "login-success",
+  "switch-panel",
+  "input-focus",
+  "input-blur",
+  "btn-enter",
+  "btn-leave",
+]);
 
 const form = reactive({
   username: "admin",
@@ -98,21 +119,8 @@ async function handleSubmit() {
 
 <style scoped>
 .login-card {
-  overflow: hidden;
+  width: 100%;
   padding: 28px 28px 30px;
-}
-
-.card-glow {
-  position: absolute;
-  inset: auto;
-  right: -36px;
-  top: -44px;
-  width: 160px;
-  height: 160px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.92), rgba(96, 165, 250, 0.24) 44%, transparent 70%);
-  filter: blur(6px);
-  pointer-events: none;
 }
 
 .login-card-top {
@@ -143,9 +151,9 @@ async function handleSubmit() {
   padding: 8px 12px;
   border-radius: 999px;
   color: rgba(30, 64, 175, 0.82);
-  background: rgba(255, 255, 255, 0.34);
-  border: 1px solid rgba(255, 255, 255, 0.48);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .card-status span {
@@ -164,7 +172,7 @@ async function handleSubmit() {
 .login-card-copy {
   position: relative;
   z-index: 1;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .login-card-copy p {
@@ -177,14 +185,14 @@ async function handleSubmit() {
 .login-form {
   position: relative;
   z-index: 1;
-  margin-top: 26px;
+  margin-top: 22px;
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .field {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .field span {
@@ -195,47 +203,47 @@ async function handleSubmit() {
 
 .field input {
   width: 100%;
-  min-height: 60px;
-  padding: 0 20px;
-  font-size: 17px;
+  min-height: 56px;
+  padding: 0 18px;
+  font-size: 16px;
   color: #0f172a;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.36));
-  border: 1px solid rgba(255, 255, 255, 0.58);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 16px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.74),
-    0 10px 22px rgba(148, 163, 184, 0.08);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 6px 16px rgba(148, 163, 184, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 .field input:focus {
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(255, 255, 255, 0.28);
   box-shadow:
-    0 0 0 4px rgba(96, 165, 250, 0.14),
-    0 18px 30px rgba(96, 165, 250, 0.12);
+    0 0 0 3px rgba(96, 165, 250, 0.12),
+    0 12px 24px rgba(96, 165, 250, 0.1);
 }
 
 .hint-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 12px;
+  gap: 8px 10px;
   color: rgba(71, 85, 105, 0.76);
   font-size: 13px;
 }
 
 .hint-row span {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.44);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 .feedback {
-  min-height: 22px;
+  min-height: 20px;
   margin: 0;
   font-size: 14px;
 }
@@ -248,12 +256,23 @@ async function handleSubmit() {
   color: #166534;
 }
 
-.primary-button {
-  min-height: 62px;
-  margin-top: 6px;
-  font-size: 20px;
-  font-weight: 600;
-  border-radius: 20px;
+.card-switch-links {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.card-switch-links a {
+  font-size: 14px;
+  color: rgba(59, 130, 246, 0.8);
+  transition: color 160ms ease;
+}
+
+.card-switch-links a:hover {
+  color: #2563eb;
 }
 
 @media (max-width: 640px) {

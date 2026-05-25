@@ -5,10 +5,17 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: mysql+aiomysql://serenova:serenova@mysql:3306/serenova
+      FRONTEND_URL: http://localhost:8080
+      CORS_ORIGINS: '["http://localhost:8080","http://127.0.0.1:8080"]'
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
     ports:
       - "8000:8000"
     depends_on:
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
@@ -19,7 +26,35 @@ services:
     depends_on:
       - backend
 
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: serenova
+      MYSQL_USER: serenova
+      MYSQL_PASSWORD: serenova
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-userenova", "-pserenova"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  mysql_data:
+  redis_data:
