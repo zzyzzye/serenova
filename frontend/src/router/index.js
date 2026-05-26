@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { getStoredAuthState } from "../services/auth";
+import ForgotPasswordView from "../views/ForgotPasswordView.vue";
 import LoginView from "../views/LoginView.vue";
+import RegisterView from "../views/RegisterView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
 import WorkspaceView from "../views/WorkspaceView.vue";
 
@@ -12,6 +14,16 @@ const router = createRouter({
       path: "/",
       name: "login",
       component: LoginView,
+    },
+    {
+      path: "/register",
+      name: "register",
+      component: RegisterView,
+    },
+    {
+      path: "/forgot-password",
+      name: "forgot-password",
+      component: ForgotPasswordView,
     },
     {
       path: "/reset-password",
@@ -38,6 +50,8 @@ const router = createRouter({
   ],
 });
 
+const guestPages = ["login", "register", "forgot-password", "reset-password"];
+
 router.beforeEach((to) => {
   const authState = getStoredAuthState();
 
@@ -45,7 +59,7 @@ router.beforeEach((to) => {
     return { name: "login" };
   }
 
-  if (to.name === "login" && authState?.accessToken) {
+  if (guestPages.includes(to.name) && authState?.accessToken) {
     return { name: "workspace" };
   }
 

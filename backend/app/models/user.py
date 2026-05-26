@@ -3,7 +3,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.mysql import Base
@@ -13,6 +13,9 @@ class User(Base):
     """用户表。"""
 
     __tablename__ = "users"
+    __table_args__ = (
+        Index("ix_users_username_active", "username", "is_active"),
+    )
 
     id: Mapped[str] = mapped_column(
         String(64), primary_key=True, default=lambda: uuid.uuid4().hex

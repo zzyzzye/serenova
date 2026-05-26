@@ -1,13 +1,15 @@
 services:
   backend:
+    profiles:
+      - prod
     build:
       context: .
       dockerfile: backend/Dockerfile
     environment:
       REDIS_URL: redis://redis:6379/0
       DATABASE_URL: mysql+aiomysql://serenova:serenova@mysql:3306/serenova
-      FRONTEND_URL: http://localhost:8080
-      CORS_ORIGINS: '["http://localhost:8080","http://127.0.0.1:8080"]'
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173","http://localhost:8080","http://127.0.0.1:8080"]'
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
     ports:
       - "8000:8000"
@@ -17,7 +19,43 @@ services:
       redis:
         condition: service_healthy
 
+  backend-dev:
+    image: python:3.11-slim
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir . && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: mysql+aiomysql://serenova:serenova@mysql:3306/serenova
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173","http://localhost:8080","http://127.0.0.1:8080"]'
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend-dev:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm config set registry https://registry.npmmirror.com && npm install && npm run dev"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
   frontend:
+    profiles:
+      - prod
     build:
       context: .
       dockerfile: frontend/Dockerfile
@@ -58,3 +96,4 @@ services:
 volumes:
   mysql_data:
   redis_data:
+  frontend_node_modules:

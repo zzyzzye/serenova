@@ -1,7 +1,7 @@
 <template>
   <!--
-    登录页面：独立路由页，品牌标识 + 登录表单卡片。
-    背景固定，通过路由跳转到注册和忘记密码页面。
+    注册页面：独立路由页，品牌标识 + 注册表单卡片。
+    与登录页共享背景风格，通过路由跳转切换。
   -->
   <div class="auth-scene">
     <div class="bg-blob bg-blob-a" />
@@ -9,8 +9,8 @@
 
     <div class="auth-center">
       <div class="login-brand"><span class="brand-dot" /><span class="brand-name">Serenova</span></div>
-      <LoginFormCard
-        @login-success="handleSuccess" @switch-panel="switchPanel"
+      <RegisterFormCard
+        @register-success="handleSuccess" @switch-panel="switchPanel"
         @input-focus="onInputFocus" @input-blur="onInputBlur"
         @btn-enter="onBtnEnter" @btn-leave="onBtnLeave"
       />
@@ -21,14 +21,14 @@
 <script setup>
 import { useRouter } from "vue-router";
 
-import LoginFormCard from "../components/auth/LoginFormCard.vue";
+import RegisterFormCard from "../components/auth/RegisterFormCard.vue";
 import { useLiquidGlass } from "../composables/useLiquidGlass";
 
 const router = useRouter();
 const liquid = useLiquidGlass();
 
 function switchPanel(target) {
-  if (target === "register") router.push({ name: "register" });
+  if (target === "login") router.push({ name: "login" });
   else if (target === "forgot") router.push({ name: "forgot-password" });
 }
 
